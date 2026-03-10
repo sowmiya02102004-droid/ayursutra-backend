@@ -6,6 +6,8 @@ import random
 app = Flask(__name__)
 CORS(app)
 reset_otp_storage = {}
+
+
 @app.route("/send-reset-otp", methods=["POST"])
 def send_reset_otp():
 
@@ -43,7 +45,7 @@ otp_storage = {}
 
 @app.route("/")
 def home():
-    return "AyurSutra Backend Running"
+    return "AyurSutra Backend is Running Successfully"
 
 
 # LOGIN ROUTE
