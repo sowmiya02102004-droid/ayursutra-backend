@@ -1,26 +1,23 @@
-from dotenv import load_dotenv
-import os
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
-
+from flask_cors import CORS
 import random
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 app = Flask(__name__)
 
-# Load environment variables
-load_dotenv()
-from flask_cors import CORS
-
-CORS(app, origins=["https://silly-frangipane-29add5.netlify.app"])
-
-
-
+# Allow frontend access
+CORS(app)
 
 # ================= MAIL CONFIG =================
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = "sowmiya02102004@gmail.com"
-app.config['MAIL_PASSWORD'] = "itmo qurj yfrf yauw"
+app.config['MAIL_PASSWORD'] = "alyh dmil urtn ujkl"
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -31,7 +28,7 @@ mail = Mail(app)
 otp_storage = {}
 reset_otp_storage = {}
 
-# ================= HOME ROUTE =================
+# ================= HOME =================
 
 @app.route("/")
 def home():
@@ -50,7 +47,7 @@ def login():
 
     msg = Message(
         subject="AyurSutra Login Notification",
-        sender=os.getenv("EMAIL_USER"),
+        sender="sowmiya02102004@gmail.com",
         recipients=[email]
     )
 
@@ -73,23 +70,22 @@ Password: {password}
 
 @app.route("/send-otp", methods=["POST"])
 def send_otp():
+    try:
+        data = request.json
+        email = data.get("email")
 
-    data = request.json
-    email = data.get("email")
+        otp = random.randint(100000, 999999)
+        otp_storage[email] = otp
 
-    otp = random.randint(100000, 999999)
+        print("Generated OTP:", otp)
 
-    otp_storage[email] = otp
+        msg = Message(
+            subject="AyurSutra OTP Verification",
+            sender="sowmiya02102004@gmail.com",
+            recipients=[email]
+        )
 
-    print("Generated OTP:", otp)
-
-    msg = Message(
-        subject="AyurSutra OTP Verification",
-        sender=os.getenv("EMAIL_USER"),
-        recipients=[email]
-    )
-
-    msg.body = f"""
+        msg.body = f"""
 Welcome to AyurSutra!
 
 Your OTP for registration is: {otp}
@@ -97,11 +93,12 @@ Your OTP for registration is: {otp}
 Please enter this OTP to verify your account.
 """
 
-    try:
         mail.send(msg)
+
         return jsonify({"message": "OTP sent successfully"})
+
     except Exception as e:
-        print("Mail error:", e)
+        print("MAIL ERROR:", e)
         return jsonify({"message": "Failed to send OTP"}), 500
 
 
@@ -121,7 +118,7 @@ def verify_otp():
         return jsonify({"message": "Invalid OTP"})
 
 
-# ================= SEND RESET OTP =================
+# ================= RESET OTP =================
 
 @app.route("/send-reset-otp", methods=["POST"])
 def send_reset_otp():
@@ -130,12 +127,11 @@ def send_reset_otp():
     email = data.get("email")
 
     otp = random.randint(100000, 999999)
-
     reset_otp_storage[email] = otp
 
     msg = Message(
         subject="AyurSutra Password Reset OTP",
-        sender=os.getenv("EMAIL_USER"),
+        sender="sowmiya02102004@gmail.com",
         recipients=[email]
     )
 
@@ -154,10 +150,3 @@ def send_reset_otp():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
-@app.after_request
-def after_request(response):
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
-    response.headers.add("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-    return response
