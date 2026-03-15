@@ -3,27 +3,25 @@ from flask_mail import Mail, Message
 from flask_cors import CORS
 import random
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
 
-# Allow frontend access
+# Enable CORS for frontend
 CORS(app)
 
 # ================= MAIL CONFIG =================
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = "sowmiya02102004@gmail.com"
-app.config['MAIL_PASSWORD'] = "alyhdmilurtnujkl"   # REMOVE SPACES from app password
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = "sowmiya02102004@gmail.com"
+app.config['MAIL_PASSWORD'] = "alyhdmilurtnujkl"
+app.config['MAIL_DEFAULT_SENDER'] = "sowmiya02102004@gmail.com"
 
 mail = Mail(app)
 
-# ================= STORAGE =================
+# ================= TEMP STORAGE =================
 
 otp_storage = {}
 reset_otp_storage = {}
@@ -47,7 +45,6 @@ def login():
 
     msg = Message(
         subject="AyurSutra Login Notification",
-        sender="sowmiya02102004@gmail.com",
         recipients=[email]
     )
 
@@ -60,9 +57,9 @@ Password: {password}
 
     try:
         mail.send(msg)
-        return jsonify({"message": "Login successful and email sent"})
+        return jsonify({"message": "Login successful"})
     except Exception as e:
-        print("Mail error:", e)
+        print("MAIL ERROR:", e)
         return jsonify({"message": "Login successful but email failed"})
 
 
@@ -70,6 +67,7 @@ Password: {password}
 
 @app.route("/send-otp", methods=["POST"])
 def send_otp():
+
     try:
         data = request.json
         email = data.get("email")
@@ -81,7 +79,6 @@ def send_otp():
 
         msg = Message(
             subject="AyurSutra OTP Verification",
-            sender="sowmiya02102004@gmail.com",
             recipients=[email]
         )
 
@@ -130,7 +127,6 @@ def send_reset_otp():
 
     msg = Message(
         subject="AyurSutra Password Reset OTP",
-        sender="sowmiya02102004@gmail.com",
         recipients=[email]
     )
 
@@ -140,7 +136,7 @@ def send_reset_otp():
         mail.send(msg)
         return jsonify({"message": "OTP sent"})
     except Exception as e:
-        print("Mail error:", e)
+        print("MAIL ERROR:", e)
         return jsonify({"message": "Failed to send OTP"}), 500
 
 
