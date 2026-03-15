@@ -17,7 +17,7 @@ CORS(app)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = "sowmiya02102004@gmail.com"
-app.config['MAIL_PASSWORD'] = "alyh dmil urtn ujkl"
+app.config['MAIL_PASSWORD'] = "alyhdmilurtnujkl"   # REMOVE SPACES from app password
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -108,7 +108,6 @@ Please enter this OTP to verify your account.
 def verify_otp():
 
     data = request.json
-
     email = data.get("email")
     user_otp = int(data.get("otp"))
 
