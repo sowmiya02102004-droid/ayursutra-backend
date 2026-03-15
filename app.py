@@ -4,13 +4,14 @@ from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
 
 import random
+app = Flask(__name__)
 
 # Load environment variables
 load_dotenv()
 from flask_cors import CORS
 
 CORS(app, origins=["https://silly-frangipane-29add5.netlify.app"])
-app = Flask(__name__)
+
 
 
 
