@@ -1,7 +1,12 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
 from flask_cors import CORS
 import random
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -33,8 +38,8 @@ def send_reset_otp():
 # Gmail SMTP Configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'sowmiya02102004@gmail.com'
-app.config['MAIL_PASSWORD'] = 'fnrr dlih kvjl ykun'
+app.config['MAIL_USERNAME'] = os.getenv('sowmiya02102004@gmail.com')
+app.config['MAIL_PASSWORD'] = os.getenv('itmo qurj yfrf yauw')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -45,8 +50,7 @@ otp_storage = {}
 
 @app.route("/")
 def home():
-    return "AyurSutra Backend is Running Successfully"
-
+    return "AyurSutra Backend is Running"
 
 # LOGIN ROUTE
 @app.route("/login", methods=["POST"])
@@ -127,4 +131,8 @@ def verify_otp():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
