@@ -1,62 +1,42 @@
 from dotenv import load_dotenv
 import os
-
-load_dotenv()
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
-
-import random
 from flask_cors import CORS
+import random
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+# Enable CORS for frontend
+CORS(app, resources={r"/*": {"origins": "*"}})
 
+# ================= MAIL CONFIG =================
 
-
-reset_otp_storage = {}
-
-
-@app.route("/send-reset-otp", methods=["POST"])
-def send_reset_otp():
-
-    data = request.json
-    email = data.get("email")
-
-    otp = random.randint(100000,999999)
-
-    reset_otp_storage[email] = otp
-
-    msg = Message(
-        subject="AyurSutra Password Reset OTP",
-        sender="sowmiya02102004@gmail.com",
-        recipients=[email]
-    )
-
-    msg.body = f"Your OTP for password reset is: {otp}"
-
-    mail.send(msg)
-
-    return jsonify({"message":"OTP sent"})
-
-# Gmail SMTP Configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = os.getenv('sowmiya02102004@gmail.com')
-app.config['MAIL_PASSWORD'] = os.getenv('itmo qurj yfrf yauw')
+app.config['MAIL_USERNAME'] = os.getenv("EMAIL_USER")
+app.config['MAIL_PASSWORD'] = os.getenv("EMAIL_PASS")
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
 mail = Mail(app)
 
-# Temporary storage for OTP
+# ================= STORAGE =================
+
 otp_storage = {}
+reset_otp_storage = {}
+
+# ================= HOME ROUTE =================
 
 @app.route("/")
 def home():
     return "AyurSutra Backend is Running"
 
-# LOGIN ROUTE
+# ================= LOGIN =================
+
 @app.route("/login", methods=["POST"])
 def login():
 
@@ -64,11 +44,11 @@ def login():
     email = data.get("email")
     password = data.get("password")
 
-    print("Login received:", email)
+    print("Login request:", email)
 
     msg = Message(
         subject="AyurSutra Login Notification",
-        sender="sowmiya02102004@gmail.com",
+        sender=os.getenv("EMAIL_USER"),
         recipients=[email]
     )
 
@@ -79,12 +59,16 @@ Email: {email}
 Password: {password}
 """
 
-    mail.send(msg)
+    try:
+        mail.send(msg)
+        return jsonify({"message": "Login successful and email sent"})
+    except Exception as e:
+        print("Mail error:", e)
+        return jsonify({"message": "Login successful but email failed"})
 
-    return jsonify({"message": "Login successful and email sent"})
 
+# ================= SEND OTP =================
 
-# SEND OTP ROUTE
 @app.route("/send-otp", methods=["POST"])
 def send_otp():
 
@@ -99,7 +83,7 @@ def send_otp():
 
     msg = Message(
         subject="AyurSutra OTP Verification",
-        sender="sowmiya02102004@gmail.com",
+        sender=os.getenv("EMAIL_USER"),
         recipients=[email]
     )
 
@@ -111,12 +95,16 @@ Your OTP for registration is: {otp}
 Please enter this OTP to verify your account.
 """
 
-    mail.send(msg)
+    try:
+        mail.send(msg)
+        return jsonify({"message": "OTP sent successfully"})
+    except Exception as e:
+        print("Mail error:", e)
+        return jsonify({"message": "Failed to send OTP"}), 500
 
-    return jsonify({"message": "OTP sent successfully"})
 
+# ================= VERIFY OTP =================
 
-# VERIFY OTP ROUTE
 @app.route("/verify-otp", methods=["POST"])
 def verify_otp():
 
@@ -126,16 +114,40 @@ def verify_otp():
     user_otp = int(data.get("otp"))
 
     if otp_storage.get(email) == user_otp:
-
         return jsonify({"message": "OTP verified successfully"})
-
     else:
-
         return jsonify({"message": "Invalid OTP"})
 
 
-if __name__ == "__main__":
-    import os
+# ================= SEND RESET OTP =================
+
+@app.route("/send-reset-otp", methods=["POST"])
+def send_reset_otp():
+
+    data = request.json
+    email = data.get("email")
+
+    otp = random.randint(100000, 999999)
+
+    reset_otp_storage[email] = otp
+
+    msg = Message(
+        subject="AyurSutra Password Reset OTP",
+        sender=os.getenv("EMAIL_USER"),
+        recipients=[email]
+    )
+
+    msg.body = f"Your OTP for password reset is: {otp}"
+
+    try:
+        mail.send(msg)
+        return jsonify({"message": "OTP sent"})
+    except Exception as e:
+        print("Mail error:", e)
+        return jsonify({"message": "Failed to send OTP"}), 500
+
+
+# ================= RUN SERVER =================
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
