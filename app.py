@@ -2,16 +2,17 @@ from dotenv import load_dotenv
 import os
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
-from flask_cors import CORS
+
 import random
 
 # Load environment variables
 load_dotenv()
+from flask_cors import CORS
 
+CORS(app, origins=["https://silly-frangipane-29add5.netlify.app"])
 app = Flask(__name__)
 
-# Enable CORS for frontend
-CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 # ================= MAIL CONFIG =================
 
